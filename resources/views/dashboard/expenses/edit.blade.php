@@ -1,0 +1,186 @@
+@extends('dashboard.layouts.main')
+
+@section('container')
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h2>Edit Transaksi</h2>
+</div>
+
+<div class="col-lg-10">
+    <form method="post" action="/dashboard/expenses/{{ $expenses->id }}" enctype="multipart/form-data">
+        @method('put')
+        @csrf
+        <button type="submit" class="btn btn-warning mb-4">Update</button>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="title">Transaksi</label>
+                <input type="text" name="title" class="form-control @error('title') is-invalid
+            @enderror" id="title" placeholder="Tuliskan Judul" required autofocus value="{{ old('title', $expenses->title) }}">
+                @error('title')
+                {{ $message }}
+                @enderror
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label for="date">Tanggal</label>
+                <input type="date" name="date" id="date" class="form-control" value={{ old('amount', $expenses->date) }} required>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col mb-3">
+                <label for="amount">Nilai</label>
+                <div class="input-group mb-2">
+                    <div class="input-group-prepend">
+                        <div class="input-group-text">Rp.</div>
+                    </div>
+                    <input type="number" name="amount" class="form-control @error('amount') is-invalid
+                @enderror" id="amount" placeholder="10000" required value="{{ old('amount', $expenses->amount) }}">
+                </div>
+                @error('amount')
+                {{ $message }}
+                @enderror
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label for="type_id">Kategori</label>
+                <select class="form-select @error('type_id') is-invalid
+            @enderror" name="type_id" id="type_id" required>
+
+                    @foreach ($types as $type)
+                    @if(old('type_id', $expenses->type_id) === $type->id)
+                    <option value="{{ $type->id }}" selected>
+                        {{ $type->name }}
+                    </option>
+                    @else
+                    <option value="{{ $type->id }}">
+                        {{ $type->name }}
+                    </option>
+                    @endif
+                    @endforeach
+                    @error('type_id')
+                    {{ $message }}
+                    @enderror
+                </select>
+            </div>
+
+
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="payment_id">Jenis Pembayaran</label>
+                <select class="form-select @error('payment_id') is-invalid
+                @enderror" name="payment_id" id="payment_id" required>
+
+                    @foreach ($payments as $payment)
+                    @if(old('payment_id', $expenses->payment_id) === $payment->id)
+                        <option value="{{ $payment->id }}" selected>
+                            {{ $payment->name }}
+                        </option>
+                    @else
+                        <option value="{{ $payment->id }}">
+                            {{ $payment->name }}
+                        </option>
+                    @endif
+                    @endforeach
+                    @error('payment_id')
+                        {{ $message }}
+                    @enderror
+                </select>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label for="card_id"> Alat Pembayaran </label>
+                <select class="form-select @error('card_id') is-invalid
+            @enderror" name="card_id" id="card_id" required>
+
+                    @foreach ($cards as $card)
+                    @if(old('card_id', $expenses->card_id) === $card->id)
+                    <option value="{{ $card->id }}" selected>
+                        {{ $card->name }}
+                    </option>
+                    @else
+                    <option value="{{ $card->id }}">
+                        {{ $card->name }}
+                    </option>
+                    @endif
+                    @endforeach
+                    @error('card_id')
+                    {{ $message }}
+                    @enderror
+                </select>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="invoice"> Invoice </label>
+                <select class="form-select @error('invoice') is-invalid
+                @enderror" name="invoice" id="invoice" required onchange="showDiv('image',this)">
+                    @if(old('invoice', $expenses->invoice) === "Ya")
+                    <option value="Ya" selected>
+                        Ya
+                    </option>
+                    <option [ngValue]="Tidak">
+                        Tidak
+                    </option>
+                    @else
+                    <option [ngValue]="Ya">
+                        Ya
+                    </option>
+                    <option [ngValue]="Tidak" selected>
+                        Tidak
+                    </option>
+                    @endif
+                    @error('invoice')
+                    {{ $message }}
+                    @enderror
+                </select>
+            </div>
+
+            <div class="col-md-6 mb-3" id="image" style="display:block">
+                <label class="custom-file-label" for="image">File Invoice</label>
+
+                <input type="file" class="form-control @error('image') is-invalid
+
+                @enderror" name="image" onchange="previewImage()">
+                @if($expenses->image)
+                    <img src="{{ asset('storage/' . $expenses->image) }}" class="img-preview img-fluid mt-2 d-block" id="frame" style="max-height:500px; overflow:hidden">
+                @else
+                    <img class="img-preview img-fluid mt-2 d-block" id="frame" style="max-height:300px; overflow:hidden;">
+                @endif
+
+                @error('image')
+                {{ $message }}
+                @enderror
+            </div>
+        </div>
+</div>
+
+</form>
+</div>
+
+<script type="text/javascript">
+    function previewImage() {
+        frame.src = URL.createObjectURL(event.target.files[0]);
+    }
+
+    function showDiv(divId, element) {
+        document.getElementById(divId).style.display = element.value == 'Ya' ? 'block' : 'none';
+    }
+
+    let button = document.querySelector("#card_id");
+        document.querySelector("#payment_id").addEventListener('change', function (e) {
+        if (e.target.value === "1") {
+            button.disabled = true;
+            button.value = "1";
+    }   else {
+            button.disabled = false;
+            button.value = "2";
+            button.querySelector("option[value='1']").style.display = 'none';
+    }
+})
+
+</script>
+
+@endsection
